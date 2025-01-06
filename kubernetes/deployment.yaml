@@ -1,0 +1,47 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assignment-app
+  namespace: default
+spec:
+  replicas: 3  # Increased from 2 to 3 replicas
+  selector:
+    matchLabels:
+      app: assignment
+  template:
+    metadata:
+      labels:
+        app: assignment
+    spec:
+      serviceAccountName: app-serviceaccount
+      containers:
+        - name: assignment-container
+          image: "samteymourifar/my-flask-assignment:ee26c06"
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DYNAMODB_TABLE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: assignment-app-config
+                  key: DYNAMODB_TABLE_NAME
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: assignment-app-config
+                  key: AWS_REGION
+          resources:
+            requests:
+              memory: "256Mi"      # Requesting 256Mi of memory
+              cpu: "250m"          # Requesting 250 milliCPU
+            limits:
+              memory: "512Mi"      # Limiting to 512Mi of memory
+              cpu: "500m"          # Limiting to 500 milliCPU
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone  # Spreads across availability zones
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: assignment

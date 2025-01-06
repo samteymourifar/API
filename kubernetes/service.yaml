@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: assignment-service
+  namespace: default
+  labels:
+    app: assignment
+spec:
+  type: ClusterIP
+  selector:
+    app: assignment
+  ports:
+    - protocol: TCP
+      port: 5000          
+      targetPort: 5000  
